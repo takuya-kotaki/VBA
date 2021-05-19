@@ -1,0 +1,90 @@
+Sub MantisReport()
+
+    Dim scrutiny As String
+    scrutiny = Cells(1, 27).Value
+    
+    Dim categoryValue As String
+    categoryValue = Cells(1, 3).Value + vbLf
+    
+    Dim sc As String
+    sc = scrutiny + categoryValue
+    
+   Dim reproducibility As String
+   reproducibility = Cells(2, 27).Value
+   
+   Dim reproducibilityValue As String
+   reproducibilityValue = Cells(2, 3).Value + vbLf
+   
+   Dim rv As String
+   rv = reproducibility + reproducibilityValue
+   
+    Dim importance As String
+    importance = Cells(3, 27).Value
+    
+    Dim importanceValue As String
+    importanceValue = Cells(3, 3).Value + vbLf
+    
+    Dim iv As String
+    iv = importance + importanceValue
+    
+    Dim sqcPs4V70000 As String
+    sqcPs4V70000 = Cells(4, 27).Value
+    
+    Dim specificationConfirmation As String
+    specificationConfirmation = Cells(4, 3).Value
+     
+     If specificationConfirmation = Cells(2, 30).Value Then
+        sqcPs4V70000 = sqcPs4V70000 + specificationConfirmation
+    End If
+    
+    Dim overview As String
+    overview = Cells(5, 3).Value + vbLf
+     
+    Dim so As String
+    so = sqcPs4V70000 + overview + vbLf
+    
+    InputForm
+    Call InputForm
+    
+    
+    
+    Cells(2, 1) = sc + rv + iv + so
+    
+End Sub
+Sub InputForm()
+        
+    Dim reproductionProcedure As String
+    Dim i As Integer
+    Dim parenthesis As String
+    Dim number As String
+    
+    
+    i = 1
+         
+    parenthesis = Cells(3, 31).Value + Str(i) + Cells(4, 31).Value
+    
+    number = parenthesis + Cells(2, 31).Value
+           
+    reproductionProcedure = InputBox(Cells(1, 31).Value, Cells(7, 2).Value, number)
+    Do
+        
+        If Cells(i, 32) <> " " And vbOK Then
+            Cells(i, 32) = reproductionProcedure
+            i = i + 1
+            if2 (i)
+            Call if2
+    Loop While Cells(i, 32) <> " " Or vbcansel
+    End If
+    
+End Sub
+Sub if2(i As Integer)
+
+    Dim rp2 As String
+    Dim number As String
+    Dim parenthesis As String
+    
+    parenthesis = Cells(3, 31).Value + Str(i) + Cells(4, 31).Value
+    number = parenthesis + Cells(2, 31).Value
+    rp2 = InputBox(Cells(1, 31).Value, Cells(7, 2).Value, number)
+    
+End Sub
