@@ -1,0 +1,31 @@
+Sub adhoc()
+'
+' adhoc Macro
+' フリーチェック指針
+'
+' Keyboard Shortcut: Ctrl+Shift+P
+'
+    ActiveCell.FormulaR1C1 = Now
+    Dim row_num, col_num As Long, square_brackets, bullets As String, i, j As Integer
+    row_num = ActiveCell.Row
+    col_num = ActiveCell.Column
+    Cells(row_num, col_num + 1).Value = "v70000_rc_"
+    Cells(row_num, col_num + 2).Value = "検証中"
+    For j = 1 To 3
+        If j = 3 Then
+            bullets = bullets + "・"
+            Exit For
+        End If
+        bullets = bullets + "・" + vbLf
+    Next
+    Cells(row_num, col_num + 3).Value = bullets
+    For i = 1 To 10
+        square_brackets = square_brackets + " [" + CStr(i) + "]"
+        If i <> 10 Then
+            square_brackets = square_brackets + vbLf
+        End If
+    Next
+    Cells(row_num, col_num + 4).Value = square_brackets
+    Cells(row_num, col_num + 5).Value = bullets
+    Cells(row_num, col_num + 6).Value = "SQC 小滝"
+End Sub
