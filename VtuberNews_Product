@@ -1,0 +1,32 @@
+Sub テスト()
+
+    Dim C6の値, D6の値 As String
+    C6の値 = Range("C6").Value
+    D6の値 = Range("D6").Value
+    
+    If C6の値 <> "" And D6の値 <> "" Then
+        With Sheets(C6の値)
+            .Rows("7:7").Insert Shift:=xlDown, CopyOrigin:=xlFormatFromLeftOrAbove
+            .Range("E7:H7").Borders.LineStyle = xlContinuous
+            
+            Select Case .Range("E8:H8").Interior.Color
+                
+                Case RGB(155, 194, 230)
+                    .Range("E7:H7").Interior.Color = RGB(221, 235, 247)
+                Case RGB(221, 235, 247)
+                    .Range("E7:H7").Interior.Color = RGB(155, 194, 230)
+            End Select
+        End With
+    Else
+        If C6の値 = "" Then
+            MsgBox ("追加シート名をリストから選択してください")
+        End If
+        If D6の値 = "" Then
+            MsgBox ("トピック名を記載してください")
+        MsgBox ("更新するトピックセルを全て入力して下さい")
+        
+    End If
+    
+    
+    
+End Sub
