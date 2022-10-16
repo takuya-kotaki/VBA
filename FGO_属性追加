@@ -1,0 +1,25 @@
+ Sub P_split()
+ 
+    If Intersect(Range("I8:I600"), ActiveCell) Is Nothing Then
+        Exit Sub
+    
+    ElseIf Selection.Count > 1 Then
+        Exit Sub
+        
+    Else
+        Dim i5Val, tmp, ampersand As String
+        i5Val = Range("I5").Formula
+        
+        ampersand = "&"" ""&"
+        
+        tmp = Selection.Formula
+        If tmp = "" Then
+            Selection.Formula = i5Val
+        
+        Else
+            i5Val = Replace(i5Val, "=", "")
+            Selection.Formula = tmp + ampersand + i5Val
+        End If
+        
+    End If
+ End Sub
