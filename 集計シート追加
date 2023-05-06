@@ -1,0 +1,433 @@
+Public Sub InputBox_Sum()
+
+    Dim flg As Boolean, cnt As Long
+    flg = False: cnt = 0
+
+    Dim bpath
+    Dim filename As String
+    bpath = ThisWorkbook.Path & "\"""
+
+'    filename = Dir("C:\Users\yonda\デスクトップ\Work\Excel\*.xlsx")
+    filename = Dir(bpath & "*.xlsx")
+    
+    Do While filename <> ""
+        Dim wb As Workbook
+
+        Application.Visible = False
+        Set wb = Workbooks.Open(filename:=bpath & filename)
+'        Set wb = Workbooks.Open(filename:="C:\Users\yonda\デスクトップ\Work\Excel\" & filename)
+
+        Dim sh As Worksheet
+        For Each sh In wb.Sheets
+            sh.Activate
+            Call TestResultBox(flg, cnt)
+        Next sh
+
+        If wb.Sheets(1).Name = F_StringText.F_L_Sum.Caption Then '集計
+            wb.Close SaveChanges:=True
+            filename = Dir()
+            GoTo L_OpenWB
+        End If
+
+        Set sh = wb.Sheets.Add(before:=wb.Sheets(1))
+        Call S_AddSumSheet(sh, cnt)
+
+        wb.Close SaveChanges:=True
+
+        filename = Dir()
+        Set sh = Nothing
+L_OpenWB:
+        Set wb = Nothing
+    Loop
+
+    Application.Visible = True
+
+    If flg = True Then
+        MsgBox (F_StringText.F_L_CompleteAdded.Caption)
+    Else: MsgBox (F_StringText.F_L_EndProcess.Caption)
+    End If
+
+End Sub
+
+Public Sub TestResultBox(ByRef flg As Boolean, ByRef cnt As Long)
+
+    If Range("A12").Value <> F_StringText.F_L_Remark.Caption Then: Exit Sub
+    If Range("AX18").Value = F_StringText.F_L_TotalNumberOfItems.Caption Then: Exit Sub
+
+    Dim i, rcnt As Integer, str, strOK, strNG, strOnHold, str_, strBlank, strAsterisk As String
+    Dim beige As Range
+    Dim grey As Range
+    Set beige = Range("AX18")
+
+    beige.Value = F_StringText.F_L_TotalNumberOfItems.Caption
+    With beige
+        .Offset(1, 0) = "OK"
+        .Offset(2, 0) = "NG"
+        .Offset(3, 0) = F_StringText.F_L_OnHold.Caption
+        .Offset(4, 0) = "-"
+        .Offset(5, 0) = F_StringText.F_L_Blank.Caption
+        .Offset(6, 0) = "※"
+    End With
+
+    For i = 18 To 24
+        str = "AY" & CStr(i) & ":BN" & CStr(i)
+        Range(str).Merge
+    Next i
+
+    With Range("AX18:BN24")
+        .Borders(xlEdgeLeft).Weight = xlMedium
+        .Borders(xlEdgeTop).Weight = xlMedium
+        .Borders(xlEdgeBottom).Weight = xlMedium
+        .Borders(xlEdgeRight).Weight = xlMedium
+        .Borders(xlInsideHorizontal).Weight = xlThin
+        .Borders(xlInsideVertical).Weight = xlThin
+    End With
+
+    Range("AX18:AX24").Interior.Color = RGB(252, 213, 180)
+
+    Set beige = Range("AY18")
+    rcnt = Range("A1000").End(xlUp).Row
+    rcnt = rcnt - 1
+    strOK = "=COUNTIF($BA30:$BA" & CStr(rcnt) & _
+        ",$AX$19)+COUNTIF($BH30:$BH" & CStr(rcnt) & ",$AX$19)"
+    strNG = "=SUMPRODUCT(($BA30:$BA" & CStr(rcnt) & _
+        "=$AX$20)*($BH30:$BH" & CStr(rcnt) & "<>$AX$19))"
+    strOnHold = "=COUNTIF($BA30:$BA" & CStr(rcnt) & ",$AX$21)"
+    str_ = "=COUNTIF($BA30:$BA" & CStr(rcnt) & ",$AX$22)"
+    strBlank = "=COUNTBLANK($BA30:$BA" & CStr(rcnt) & ")"
+    strAsterisk = "=COUNTIF($BA30:$BA" & CStr(rcnt) & ",$AX$24)"
+
+    beige.Formula = "=SUM($AY$19:$AY$22,$AY$24)"
+
+    With beige
+        .Offset(1, 0).Formula = strOK
+        .Offset(2, 0).Formula = strNG
+        .Offset(3, 0).Formula = strOnHold
+        .Offset(4, 0).Formula = str_
+        .Offset(5, 0).Formula = strBlank
+        .Offset(6, 0).Formula = strAsterisk
+    End With
+    Set beige = Nothing
+
+    Range("AY26:BN26").Merge
+    Range("AY26").Value = F_StringText.F_L_FunctionalTesting.Caption
+    Range("AY26").Font.Bold = True
+    Range("AY27:BE27").Merge
+    Range("AY27").Value = F_StringText.F_L_InitialConfirmination.Caption
+    Range("BF27:BL27").Merge
+    Range("BF27").Value = F_StringText.F_L_FinalConfirmination.Caption
+    Range("BM27:BM28").Merge
+    Range("BM27").Value = "BTS"
+    Range("BN27:BN28").Merge
+    Range("BN27").Value = F_StringText.F_L_Remark.Caption
+    Range("AY28:AZ28").Merge
+    Range("AY28").Value = F_StringText.F_L_Date.Caption
+    Range("BA28").Value = "ゝ"
+    Range("BB28:BC28").Merge
+    Range("BB28").Value = F_StringText.F_L_ResponsiblePerson.Caption
+    Range("BD28").Value = "S/W Ver"
+    Range("BE28").Value = "OSVer"
+    Range("BF28:BG28").Merge
+    Range("BF28").Value = F_StringText.F_L_Date.Caption
+    Range("BH28").Value = "ゝ"
+    Range("BI28:BJ28").Merge
+    Range("BI28").Value = F_StringText.F_L_ResponsiblePerson.Caption
+    Range("BK28").Value = "S/W Ver"
+    Range("BL28").Value = "OSVer"
+    
+    With Range("AY26:BN28")
+        .Interior.Color = RGB(197, 217, 241)
+        .Borders(xlInsideHorizontal).Weight = xlThin
+    End With
+
+    str = "BA29:BA" & CStr(rcnt)
+    Call CreateList(Range(str))
+    str = "BH29:BH" & CStr(rcnt)
+    Call CreateList(Range(str))
+
+    Call DateManage_Merge("AY", "AZ", rcnt)
+    Call DateManage_Merge("BB", "BC", rcnt)
+    Call DateManage_Merge("BF", "BG", rcnt)
+    Call DateManage_Merge("BI", "BJ", rcnt)
+ 
+    str = "AY26:BN" & CStr(rcnt)
+    With Range(str)
+        .Borders(xlEdgeLeft).Weight = xlMedium
+        .Borders(xlEdgeTop).Weight = xlMedium
+        .Borders(xlEdgeBottom).Weight = xlMedium
+        .Borders(xlEdgeRight).Weight = xlMedium
+        .Borders(xlInsideHorizontal).Weight = xlThin
+        .Borders(xlInsideVertical).Weight = xlHairline
+    End With
+
+     With Range("AY28:BN28").Borders(xlEdgeBottom)
+        .LineStyle = xlDouble
+        .Weight = xlThick
+     End With
+    
+     str = "BM27:BM" & CStr(rcnt)
+     With Range(str)
+        .Borders(xlEdgeLeft).Weight = xlThin
+        .Borders(xlEdgeRight).Weight = xlThin
+     End With
+    
+     str = "BF27:BF" & CStr(rcnt)
+     Range(str).Borders(xlEdgeLeft).Weight = xlThin
+    
+     str = "BA30:BA" & CStr(rcnt) & ",BH30:BH" & CStr(rcnt)
+     Range(str).Value = "-"
+    
+     str = "AV29:AV" & CStr(rcnt)
+     For Each grey In Range(str)
+        If grey.Interior.Color = RGB(217, 217, 217) Then
+            grey.Offset(0, 5).Value = ""
+            grey.Offset(0, 12).Value = ""
+        End If
+     Next
+     Set grey = Nothing
+    
+     With Columns("AX:BN")
+        .HorizontalAlignment = xlCenter
+        .VerticalAlignment = xlCenter
+        .Font.Name = "Meiryo UI"
+        .Font.Size = 10
+     End With
+    
+     Range("AX:AX").ColumnWidth = 11.38
+     Range("AY:AY").ColumnWidth = 4.75
+    
+     Range("AZ:AZ").ColumnWidth = 5.5
+     Range("BA:BA").ColumnWidth = 3.38
+     Range("BB:BB").ColumnWidth = 4.75
+     Range("BC:BC").ColumnWidth = 4.75
+     Range("BD:BD").ColumnWidth = 14.25
+     Range("BE:BE").ColumnWidth = 14.25
+     Range("BF:BF").ColumnWidth = 4.75
+     Range("BG:BG").ColumnWidth = 4.75
+     Range("BH:BH").ColumnWidth = 3.38
+     Range("BI:BI").ColumnWidth = 4.75
+     Range("BJ:BJ").ColumnWidth = 4.75
+     Range("BK:BK").ColumnWidth = 17.38
+     Range("BL:BL").ColumnWidth = 14.25
+     Range("BM:BM").ColumnWidth = 6.75
+     Range("BN:BN").ColumnWidth = 41.13
+    
+     str = "AY29:BN" & CStr(rcnt)
+     With Range(str)
+         .FormatConditions.Add Type:=xlCellValue, _
+            Operator:=xlEqual, _
+            Formula1:="=""NG"""
+         .FormatConditions(.FormatConditions.Count).SetFirstPriority
+        
+         .FormatConditions(1).Font.Color = -16776961
+        
+         .FormatConditions.Add Type:=xlExpression, _
+            Formula1:="=$BA29="""""
+        
+         .FormatConditions(.FormatConditions.Count).SetFirstPriority
+        
+         .FormatConditions(1).Interior.PatternColorIndex = xlAutomatic
+         .FormatConditions(1).Interior.ThemeColor = xlThemeColorDark1
+         .FormatConditions(1).Interior.TintAndShade = -0.249946592608417
+         .FormatConditions(1).StopIfTrue = False
+    End With
+    
+     flg = True: cnt = cnt + 1
+
+End Sub
+
+Public Sub S_AddSumSheet(ByRef sumCnt As Worksheet, ByRef cnt As Long)
+
+    If Range("B2").Value = F_StringText.F_L_Sheet.Caption Then: Exit Sub
+
+    Dim inc, i As Long, str, tmp As String
+    inc_4 = cnt + 4
+    inc_3 = cnt + 3
+
+    Dim rng As Range
+
+     sumCnt.Name = F_StringText.F_L_Sum
+     sumCnt.Activate
+     ActiveWindow.DisplayGridlines = False
+    
+     Range("A:A").ColumnWidth = 3.5
+     Range("B:B").ColumnWidth = 12.75
+    
+     Range("B2:B3").Merge
+    
+     str = "B2:I" & CStr(inc_4)
+     With Range(str)
+        .Borders(xlEdgeLeft).Weight = xlMedium
+        .Borders(xlEdgeTop).Weight = xlMedium
+        .Borders(xlEdgeBottom).Weight = xlMedium
+        .Borders(xlEdgeRight).Weight = xlMedium
+     End With
+    
+     Range("B4").Borders(xlEdgeTop).Weight = xlMedium
+    
+     str = "B2:B" & CStr(inc_4)
+     With Range(str).Borders(xlEdgeRight)
+        .LineStyle = xlDouble
+        .Weight = xlThick
+     End With
+    
+     With Range("C3:I3")
+        .Borders(xlEdgeTop).Weight = xlThin
+        .Borders(xlEdgeBottom).LineStyle = xlDouble
+        .Borders(xlEdgeBottom).Weight = xlThick
+     End With
+    
+     str = "C3:I" & CStr(inc_4)
+     Range(str).Borders(xlInsideVertical).Weight = xlThin
+    
+     str = "B4:I" & CStr(inc_3)
+     Range(str).Borders(xlInsideHorizontal).Weight = xlThin
+    
+     str = "B8:I" & CStr(inc_4)
+     With Range(str).Borders(xlEdgeTop)
+        .LineStyle = xlDouble
+        .Weight = xlThick
+     End With
+    
+     With Range("B2")
+        .Interior.Color = RGB(146, 208, 80)
+        .Value = F_StringText.F_L_Sheet.Caption
+        .HorizontalAlignment = xlCenter
+        .VerticalAlignment = xlCenter
+     End With
+    
+     str = "B" & CStr(inc_4)
+     With Range(str)
+        .Interior.Color = RGB(146, 208, 80)
+        .Value = F_StringText.F_L_Total.Caption
+        .HorizontalAlignment = xlRight
+        .VerticalAlignment = xlCenter
+     End With
+    
+     With Range("C2:I3")
+        .Interior.Color = RGB(197, 217, 241)
+        .VerticalAlignment = xlCenter
+     End With
+    
+     Range("F2").Value = F_StringText.F_L_FunctionalTesting.Caption
+    
+     Call HorizontalCenter(Range("C3"), F_StringText.F_L_TotalNumberOfItems.Caption)
+     Call HorizontalCenter(Range("D3"), F_StringText.F_L_NotImplemented.Caption)
+     Call HorizontalCenter(Range("E3"), "OK")
+     Call HorizontalCenter(Range("F3"), "NG")
+     Call HorizontalCenter(Range("G3"), F_StringText.F_L_OnHold.Caption)
+     Call HorizontalCenter(Range("H3"), F_StringText.F_L_Blank.Caption)
+     Call HorizontalCenter(Range("I3"), "※")
+    
+     str = "C" & CStr(inc_4) & ":I" & CStr(inc_4)
+     With Range(str)
+        .Interior.Color = RGB(197, 217, 241)
+        .VerticalAlignment = xlCenter
+        .HorizontalAlignment = xlRight
+        .WrapText = True
+     End With
+    
+     For Each rng In Range(str).Cells
+        i = i + 1
+        With rng
+            Select Case i
+                Case 1
+                    tmp = "=SUM(C4:C" & CStr(inc_3) & ")"
+                    .Formula = tmp
+                Case 2
+                    tmp = "=SUM(D4:D" & CStr(inc_3) & ")"
+                    .Formula = tmp
+                Case 3
+                    tmp = "=SUM(E4:E" & CStr(inc_3) & ")"
+                    .Formula = tmp
+                Case 4
+                    tmp = "=SUM(F4:F" & CStr(inc_3) & ")"
+                    .Formula = tmp
+                Case 5
+                    tmp = "=SUM(G4:G" & CStr(inc_3) & ")"
+                    .Formula = tmp
+                Case 6
+                    tmp = "=SUM(H4:H" & CStr(inc_3) & ")"
+                    .Formula = tmp
+                Case 7
+                    tmp = "=SUM(I4:I" & CStr(inc_3) & ")"
+                    .Formula = tmp
+            End Select
+        End With
+     Next rng
+    
+     str = "B4:B" & CStr(inc_3)
+     
+     i = 2
+     For Each rng In Range(str)
+         i = i + 1
+         Dim sh As Worksheet
+         Set sh = ActiveWorkbook.Worksheets(i)
+        
+         rng.Value = "'" & sh.Name
+         Set sh = Nothing
+     Next rng
+    
+     str = "C4:C" & CStr(inc_3)
+     Call IndirectInjection(str, 18)
+     str = "D4:D" & CStr(inc_3)
+     Call IndirectInjection(str, 22)
+     str = "E4:E" & CStr(inc_3)
+     Call IndirectInjection(str, 19)
+     str = "F4:F" & CStr(inc_3)
+     Call IndirectInjection(str, 20)
+     str = "G4:G" & CStr(inc_3)
+     Call IndirectInjection(str, 21)
+     str = "H4:H" & CStr(inc_3)
+     Call IndirectInjection(str, 23)
+     str = "I4:I" & CStr(inc_3)
+     Call IndirectInjection(str, 24)
+    
+     str = "B2:I" & CStr(inc_4)
+     With Range(str).Font
+        .Name = "Meiryo UI"
+        .Size = 9
+     End With
+
+End Sub
+
+Public Sub DateManage_Merge(ByVal str1 As String, _
+                                            ByVal str2 As String, _
+                                            ByRef bottom_row As Integer)
+    Dim DM_M_i As Integer
+    For DM_M_i = 0 To bottom_row
+        Range(str1 & 29 + DM_M_i & ":" & str2 & 29 + DM_M_i).Merge
+    Next DM_M_i
+End Sub
+
+Public Sub IndirectInjection(ByVal str As String, ByVal num As String)
+
+    Dim rng As Range
+    For Each rng In Range(str)
+        rng.Formula = _
+        "=INDIRECT(""'""&$B$" & CStr(rng.Row) & "&""'!AY" & num & """)"
+    Next rng
+
+End Sub
+
+Public Sub HorizontalCenter(ByRef rng As Range, ByRef str As String)
+
+    With rng
+        .Value = str
+        .HorizontalAlignment = xlCenter
+        .WrapText = True
+    End With
+
+End Sub
+
+Public Sub CreateList(ByRef rngargs As Range)
+
+    With rngargs.Validation
+        .Delete
+        .Add Type:=xlValidateList, _
+          Operator:=xlBetween, _
+         Formula1:=F_StringText.F_L_ListItems.Caption
+    End With
+
+End Sub
+
